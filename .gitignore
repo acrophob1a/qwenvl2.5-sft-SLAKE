@@ -1,0 +1,17 @@
+pretrained/
+*.egg-info/
+tutorials/
+work_dirs/
+to_upload/
+__pycache__/
+*.pyc
+.cache/
+*.log
+.env
+.DS_Store
+.vscode/
+!.vscode/settings.json
+
+# 大文件不进 Git
+datasets/SLAKE/
+datasets/*.log
