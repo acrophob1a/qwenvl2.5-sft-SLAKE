@@ -306,3 +306,51 @@ bash finetuning/scripts/sft_slake.sh
 **下一步**：验证集推理评估 + 样例可视化
 
 ---
+
+## exp-008 — SLAKE 验证集推理评估 — 2026-06-06
+
+**状态**：已完成
+
+**动机**：对比基座模型与 SFT 权重在 SLAKE 英文验证集上的 VQA 准确率，生成前后对比图。
+
+**数据版本**：data-v2
+
+**配置**：
+| 项 | 值 |
+|----|-----|
+| 验证集 | `validation.json`，`q_lang=en`，1053 条 |
+| 基座模型 | `pretrained/Qwen2.5-VL-3B-Instruct` |
+| SFT 模型 | `work_dirs/slake-vqa-sft-v1/checkpoint-1845` |
+| 评估脚本 | `scripts/eval_slake_val.py` |
+| 匹配方式 | 归一化 exact match |
+| max_new_tokens | 32 |
+
+**命令**：
+```bash
+cd /root/autodl-tmp/qwenvl-sft
+python3 scripts/eval_slake_val.py \
+  --output-dir records/results/exp-008 \
+  --max-new-tokens 32
+```
+
+**结果**：
+
+| 指标 | Base | SFT | Δ |
+|------|------|-----|---|
+| Overall | 0.1% (1/1053) | **81.3%** (856/1053) | +81.2% |
+| Closed | 0.0% (0/422) | **87.0%** (367/422) | +87.0% |
+| Open | 0.2% (1/631) | **77.5%** (489/631) | +77.3% |
+
+**产出物**：
+- `records/results/exp-008/accuracy_comparison.png` — 前后对比柱状图
+- `records/results/exp-008/qualitative_examples.png` — 样例可视化
+- `records/results/exp-008/metrics.json` — 完整指标
+
+**观察与结论**：
+- 基座模型倾向生成长文本，几乎无法 exact match SLAKE 短答案格式
+- SFT 后模型学会输出简短答案（如 `MRI`、`Yes/No`），Closed 题提升最明显
+- 评估耗时 ~21 min（1053 × 2 模型）
+
+**下一步**：测试集评估 / 推理 demo
+
+---

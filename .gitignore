@@ -16,3 +16,7 @@ __pycache__/
 datasets/SLAKE/
 datasets/*.log
 _demo_extract/
+
+# 评估预测文件较大，不进 Git；图表和 metrics 保留
+records/results/**/pred_*.jsonl
+records/results/**/eval.log

@@ -1,0 +1,42 @@
+{
+  "split": "validation",
+  "q_lang": "en",
+  "num_samples": 1053,
+  "base_model": "/root/autodl-tmp/qwenvl-sft/pretrained/Qwen2.5-VL-3B-Instruct",
+  "sft_model": "/root/autodl-tmp/qwenvl-sft/work_dirs/slake-vqa-sft-v1/checkpoint-1845",
+  "base": {
+    "OPEN": {
+      "accuracy": 0.001584786053882726,
+      "correct": 1,
+      "total": 631
+    },
+    "ALL": {
+      "accuracy": 0.000949667616334283,
+      "correct": 1,
+      "total": 1053
+    },
+    "CLOSED": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 422
+    }
+  },
+  "sft": {
+    "OPEN": {
+      "accuracy": 0.7749603803486529,
+      "correct": 489,
+      "total": 631
+    },
+    "ALL": {
+      "accuracy": 0.8129154795821463,
+      "correct": 856,
+      "total": 1053
+    },
+    "CLOSED": {
+      "accuracy": 0.8696682464454977,
+      "correct": 367,
+      "total": 422
+    }
+  },
+  "runtime_sec": 1259.1
+}
