@@ -181,3 +181,85 @@ unzip -q imgs.zip && unzip -q KG.zip
 **下一步**：数据预处理 → SFT 训练代码搭建 → exp-005
 
 ---
+
+## exp-005 — 恢复训练框架 + SLAKE VQA 数据预处理 — 2026-06-06
+
+**状态**：已完成
+
+**动机**：从 demo1 恢复 finetuning 代码，编写 SLAKE 医学 VQA 专用 dataloader 与预处理脚本。
+
+**数据版本**：data-v2
+
+**配置**：
+| 项 | 值 |
+|----|-----|
+| 代码来源 | `Brilliant-B/awesome-demos` demo1.tar.gz |
+| 新增 Dataset | `finetuning/dataset/slake_vqa_dataset.py` |
+| 预处理脚本 | `scripts/preprocess_slake.py` |
+| 训练配置 | `finetuning/configs/sft_slake.py` |
+| 语言过滤 | 英文（`q_lang=en`，4919 条） |
+| 对话格式 | `<image>\n{question}` → `{answer}` |
+
+**命令**：
+```bash
+cd /root/autodl-tmp/qwenvl-sft
+hf download Brilliant-B/awesome-demos demo1.tar.gz --local-dir /root/autodl-tmp/downloads
+tar -xf /root/autodl-tmp/downloads/demo1.tar.gz -C _demo_extract
+cp -r _demo_extract/finetuning . && cp _demo_extract/setup.py .
+pip install -e . --no-deps && pip install -e finetuning --no-deps
+python3 scripts/preprocess_slake.py --split train --q-lang en \
+  --output datasets/SLAKE/manifests/train_en.json
+```
+
+**结果**：
+- finetuning 框架恢复（124MB 临时解压目录 `_demo_extract/`，不进 Git）
+- 英文训练集 4919 条，图片路径全部有效（missing=0）
+- `SlakeVQADataset` 可直接读取 JSON + 本地图片，无需转 TSV
+
+**观察与结论**：
+- SLAKE 原生 JSON 格式足够简单，直接写 Dataset 比转 TSV 更轻量
+- OPEN/CLOSED 问答混合（2976/1943），冒烟阶段不区分
+
+**下一步**：冒烟测试训练 → exp-006
+
+---
+
+## exp-006 — SLAKE VQA SFT 冒烟测试 — 2026-06-06
+
+**状态**：已完成
+
+**动机**：验证 SLAKE VQA 训练 pipeline 端到端可跑（数据加载 → 前向 → loss 下降 → 无 OOM）。
+
+**数据版本**：data-v2
+
+**配置**：
+| 项 | 值 |
+|----|-----|
+| 脚本 | `finetuning/scripts/sft_slake_smoke.sh` |
+| 配置快照 | `configs/snapshots/exp-006-slake-smoke.py` |
+| 样本数 | 64（随机子集） |
+| max_steps | 10 |
+| batch_size | 1 × grad_accum 2 |
+| 微调模块 | MLP + LLM（vision 冻结） |
+| lr | 2e-5 |
+| 输出 | `work_dirs/slake-vqa-smoke/` |
+
+**命令**：
+```bash
+cd /root/autodl-tmp/qwenvl-sft
+bash finetuning/scripts/sft_slake_smoke.sh
+```
+
+**结果**：
+- 训练 10 steps，耗时 8.75s，无 OOM
+- loss：2.88 → 0.10（step 9），平均 train_loss=1.27
+- 可训练参数：3.12B（vision 冻结后）
+
+**观察与结论**：
+- A800 80G 单卡 batch_size=1 运行稳定
+- flash-attn + gradient checkpointing 正常工作
+- 可进入正式训练（全量 4919 英文样本，3–5 epoch）
+
+**下一步**：正式 SFT 微调 + 验证集评估
+
+---

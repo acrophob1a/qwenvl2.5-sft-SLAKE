@@ -42,3 +42,26 @@ print({s: len(json.load(open(f'{b}/{s}.json'))) for s in ['train','validation','
 # {'train': 9835, 'validation': 2099, 'test': 2094}
 du -sh /root/autodl-tmp/qwenvl-sft/datasets/SLAKE
 ```
+
+---
+
+## data-v2 — 2026-06-06
+
+**变更类型**：清洗
+
+**摘要**：SLAKE 英文 VQA 预处理验证，生成英文 manifest，对接 SlakeVQADataset
+
+**详情**：
+- 输入：`datasets/SLAKE/train.json`（9835 条，含中英双语）
+- 过滤：`q_lang=en` → 4919 条，图片缺失 0
+- 问答类型：OPEN 2976 / CLOSED 1943
+- 对话格式：User `<image>\n{question}` / Assistant `{answer}`
+- manifest 路径：`datasets/SLAKE/manifests/train_en.json`（1.9MB，不进 Git）
+
+**关联实验**：exp-005, exp-006
+
+**验证命令**：
+```bash
+python3 scripts/preprocess_slake.py --split train --q-lang en
+# total=4919 valid=4919 missing_images=0
+```

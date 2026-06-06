@@ -15,3 +15,4 @@ __pycache__/
 # 大文件不进 Git
 datasets/SLAKE/
 datasets/*.log
+_demo_extract/
