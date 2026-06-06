@@ -263,3 +263,46 @@ bash finetuning/scripts/sft_slake_smoke.sh
 **下一步**：正式 SFT 微调 + 验证集评估
 
 ---
+
+## exp-007 — SLAKE VQA 正式 SFT 训练 — 2026-06-06
+
+**状态**：已完成
+
+**动机**：在全量 SLAKE 英文 VQA 数据上完成 3 epoch SFT，得到可用于推理的微调权重。
+
+**数据版本**：data-v2
+
+**配置**：
+| 项 | 值 |
+|----|-----|
+| 脚本 | `finetuning/scripts/sft_slake.sh` |
+| 配置快照 | `configs/snapshots/exp-007-slake-sft-v1.py` |
+| 样本数 | 4919（`q_lang=en`） |
+| epoch | 3（1845 steps） |
+| batch | 2 × grad_accum 4（有效 batch=8） |
+| 微调模块 | MLP + LLM（vision 冻结） |
+| lr | 2e-5 |
+| save | steps=500, save_only_model=True |
+| 输出 | `work_dirs/slake-vqa-sft-v1/checkpoint-1845` |
+
+**命令**：
+```bash
+cd /root/autodl-tmp/qwenvl-sft
+bash finetuning/scripts/sft_slake.sh
+# step 1000 因磁盘满中断，清理后加 --save_only_model True 从 checkpoint-500 续训
+```
+
+**结果**：
+- 3 epoch 全部完成，train_loss=**0.082**
+- 最终 checkpoint：`checkpoint-1845`（~7.6GB，仅模型权重）
+- 中间 checkpoint：`checkpoint-1000`、`checkpoint-1500`
+- 续训段耗时 2398s（~40 min），总 wall time ~70 min（含首次中断）
+
+**观察与结论**：
+- 含 optimizer 的 checkpoint 约 19GB/个，50G 数据盘会在 step 1000 写满；改用 `save_only_model=True` 后每个 checkpoint ~7GB
+- loss 从 ~2.6（epoch 0）降至 ~0.08（epoch 3），收敛正常
+- 权重路径：`/root/autodl-tmp/qwenvl-sft/work_dirs/slake-vqa-sft-v1/checkpoint-1845`
+
+**下一步**：验证集推理评估 + 样例可视化
+
+---
